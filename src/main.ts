@@ -8,19 +8,44 @@ const gridCtx = gridCanvas.getContext("2d") as CanvasRenderingContext2D;
 const selectCanvas = document.getElementById("selectCanvas") as HTMLCanvasElement;
 const selectCtx = selectCanvas.getContext("2d") as CanvasRenderingContext2D;
 
+class ImageFlyweight {
+    private imageSrc: string;
+    private image: HTMLImageElement | null;
+  
+    constructor(src: string) {
+      this.imageSrc = src;
+      this.image = null;
+    }
+  
+    getImage(): HTMLImageElement {
+      if (!this.image) {
+        this.image = new Image();
+        this.image.src = this.imageSrc;
+      }
+      return this.image;
+    }
+  }
 
-//defining the textures to use
-const imageUrls = [
-    "/tile1.png",
-    "/tile2.png",
-    "/tile3.png",
-    "/tile4.png",
-    "/tile5.png",
-    "/tile6.png",
-    "/tile7.png",
-    "/tile8.png"
-];
+  const tile1 = new ImageFlyweight("/tile1.png");
+  const tile2 = new ImageFlyweight("/tile2.png");
+  const tile3 = new ImageFlyweight("/tile3.png");
+  const tile4 = new ImageFlyweight("/tile4.png");
+  const tile5 = new ImageFlyweight("/tile5.png");
+  const tile6 = new ImageFlyweight("/tile6.png");
+  const tile7 = new ImageFlyweight("/tile7.png");
+  const tile8 = new ImageFlyweight("/tile8.png");
 
+    //defining the textures to use
+    const imageUrls = [
+        tile1,
+        tile2,
+        tile3,
+        tile4,
+        tile5,
+        tile6,
+        tile7,
+        tile8
+    ];
 
 //defining the size of the main grid
 const numTiles = 32;
@@ -31,22 +56,19 @@ const tileSize = gridCanvas.width / numTiles;
 const numSelectables = imageUrls.length;
 const selectHeight = selectCanvas.height / numSelectables;
 
-
-
 //creating the tilemap nested array
 let tilemap: HTMLImageElement[][] = new Array(numTiles);
 
 for(let i = 0; i < numTiles; i++) {
     let row = new Array(numTiles);
     for (let j = 0; j < numTiles; j++) {
-        row[j] = new Image();
-        row[j].src = "/tile1.png";
+        row[j] = tile1.getImage();
     }
     tilemap[i] = row;
 }
 
 //track the selected tile
-let currentTile = "/tile1.png";
+let currentTile : HTMLImageElement = tile1.getImage();
 
 //draw the initial canvases
 redrawTilemap();
@@ -79,7 +101,7 @@ gridCanvas.addEventListener("click", (e) => {
     const coordX = Math.trunc(e.offsetX / tileSize);
     const coordY = Math.trunc(e.offsetY / tileSize);
 
-    tilemap[coordX][coordY].src = currentTile;
+    tilemap[coordX][coordY] = currentTile;
     redrawTilemap();
 })
 
@@ -90,13 +112,12 @@ gridCanvas.addEventListener("click", (e) => {
 function drawSelectCanvas()
 {
     for (let i = 0; i < numSelectables; i++) {
-        const selectableImage = new Image();
-        selectableImage.src = imageUrls[i];
+        const selectableImage = imageUrls[i].getImage();
         drawTexture(0, i, selectCtx, selectableImage, selectCanvas.width, selectHeight, 64);
     }
 }
 
 selectCanvas.addEventListener("click", (e) => {
     const coordY = Math.trunc(e.offsetY / selectHeight);
-    currentTile = imageUrls[coordY];
+    currentTile = imageUrls[coordY].getImage();
 })
